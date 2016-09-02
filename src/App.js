@@ -1,21 +1,57 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import BankBalanceStore from './BankBalanceStore';
+import BankActions from './BankActions';
 import './App.css';
 
 class App extends Component {
+
+  constructor() {
+    super(...arguments);
+      BankActions.createAccount();
+      this.state = {
+        balance: BankBalanceStore.getState()
+      };
+  }
+
+  componentDidMount() {
+    this.storeSubscription = BankBalanceStore.addListener((data) => {
+      this.handleStoreChange(data);
+    });
+  }
+
+  componentWillUnmount() {
+    this.storeSubscription.remove();
+  }
+
+  handleStoreChange() {
+    this.setState({ balance: BankBalanceStore.getState() });
+  }
+
+  deposit() {
+    BankActions.depositIntoAccount(Number(this.refs.ammount.value));
+    this.refs.ammount.value = '';
+  }
+
+  withdraw() {
+    BankActions.withdrawFromAccount(Number(this.refs.ammount.value));
+    this.refs.ammount.value = '';
+  }
+
   render() {
-    return (
-      <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>Welcome to React</h2>
+    return(
+      <div>
+        <header>FluxTrust Bank</header>
+        <h1>Your balance is ${(this.state.balance).toFixed(2)}</h1>
+        <div className="atm">
+          <input type="text" placeholder="Enter Ammount" ref="ammount"/>
+          <br />
+          <button onClick={this.withdraw.bind(this)}>Withdraw</button>
+          <button onClick={this.deposit.bind(this)}>Deposit</button>
         </div>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
       </div>
     );
   }
+
 }
 
 export default App;
